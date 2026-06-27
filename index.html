@@ -48,7 +48,7 @@
 <div class="box">
     <h2>Exploit Proof-of-Concept</h2>
     <p>Target: <code>www.agoda.com/api/cronos/layout/notification/get</code></p>
-    <p>Source Origin: <code>https://stelemane.github.io</code></p>
+    <p>Source Origin: <code>https://stelemane.github.io/poc-site/</code></p>
     
     <div id="status" class="status info">[*] Initializing Request...</div>
     <pre id="output">Waiting for data...</pre>
@@ -89,7 +89,7 @@
         .catch(err => {
             statusDiv.innerText = "[-] ERROR: CORS Policy blocked the access.";
             statusDiv.className = "status error";
-            outputDiv.innerText = err.toString() + "\n\nNote: This means the server did not reflect the Origin: https://stelemane.github.io";
+            outputDiv.innerText = err.toString() + "\n\nNote: This means the server did not reflect the Origin: https://stelemane.github.io/poc-site/";
             console.error(err);
         });
     };
